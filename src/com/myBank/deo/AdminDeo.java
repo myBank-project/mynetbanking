@@ -145,16 +145,29 @@ public class AdminDeo {
 		return rs == 1 ? true : false;
 	}
 
-	public boolean createCredentials(int customerId,Role role) throws SQLException {
+	public boolean createCredentials(int customerId, Role role) throws SQLException {
 		Connection conn = dataSource.getConnection();
-		String sql="insert into users(username,password_hash,role) values(?,?,?)";
-		PreparedStatement prpStmt=conn.prepareStatement(sql);
-		prpStmt.setString(1,String.valueOf(customerId));
-		prpStmt.setString(2,String.valueOf(customerId));
+		String sql = "insert into users(username,password_hash,role) values(?,?,?)";
+		PreparedStatement prpStmt = conn.prepareStatement(sql);
+		prpStmt.setString(1, String.valueOf(customerId));
+		prpStmt.setString(2, String.valueOf(customerId));
 		prpStmt.setString(3, role.name());
-		
-		
-		return false;
+		int rs = prpStmt.executeUpdate();
+
+		return rs == 1 ? true : false;
+	}
+
+	public boolean findAccountNumber(int receiverAccountNumber) throws SQLException {
+		Connection conn = dataSource.getConnection();
+		String sql = "select count(*) from customer where account_number=?";
+		PreparedStatement prpStmt = conn.prepareStatement(sql);
+		prpStmt.setInt(1, receiverAccountNumber);
+		ResultSet rs = prpStmt.executeQuery();
+		int count = 0;
+		while (rs.next()) {
+			count = rs.getInt(1);
+		}
+		return count != 0 ? true : false;
 	}
 
 }

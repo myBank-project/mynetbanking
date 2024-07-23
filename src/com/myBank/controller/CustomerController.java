@@ -15,8 +15,10 @@ import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
 import com.myBank.deo.CustomerDeo;
+import com.myBank.deo.AdminDeo;
 import com.myBank.deo.CommonDeo;
 import com.myBank.entity.CustomerPassbookOrViewTransaction;
+import com.myBank.other.TransactionType;
 
 /**
  * Servlet implementation class Customer
@@ -28,12 +30,14 @@ public class CustomerController extends HttpServlet {
 	@Resource(name = "jdbc/mybanknetbanking")
 	private DataSource dataSource;
 	private CustomerDeo customerDeo;
+	private AdminDeo adminDeo;
 	private CommonDeo commonDeo;
 
 	public void init() throws ServletException {
 		super.init();
 		customerDeo = new CustomerDeo(dataSource);
 		commonDeo = new CommonDeo(dataSource);
+		adminDeo = new AdminDeo(dataSource);
 	}
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -80,6 +84,23 @@ public class CustomerController extends HttpServlet {
 		case "editProfileClick":
 			editProfileClick(request, response);
 			break;
+			
+		case "SortByOldestOneInPassBook":
+			try {
+				SortByOldestOneInPassBook(request,response);
+			} catch (ServletException | IOException | SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
+			
+		case "searchByAccNo":
+			try {
+				searchByAccNo(request,response);
+			} catch (ServletException | IOException | SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
 		default:
 			customerHome(request, response);
@@ -87,8 +108,31 @@ public class CustomerController extends HttpServlet {
 		}
 	}
 
+	private void searchByAccNo(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException {
+		HttpSession session = request.getSession();
+		int customerId = Integer.parseInt((String) session.getAttribute("username"));
+		int receiverAccountNumber=Integer.parseInt(request.getParameter("searchByAccNo"));
+		List<CustomerPassbookOrViewTransaction> customerPassbook = commonDeo.SearchByReceiverAccount(customerId,receiverAccountNumber);
+		request.setAttribute("customerPassbook", customerPassbook);
+		RequestDispatcher requestDispatcher = request.getRequestDispatcher("/PassBook.jsp");
+		requestDispatcher.forward(request, response);
+		
+	}
+
+	private void SortByOldestOneInPassBook(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException {
+		
+		HttpSession session = request.getSession();
+		int customerId = Integer.parseInt((String) session.getAttribute("username"));
+		List<CustomerPassbookOrViewTransaction> customerPassbook = commonDeo.SortByOldestOneInPassBook(customerId);
+		request.setAttribute("customerPassbook", customerPassbook);
+		RequestDispatcher requestDispatcher = request.getRequestDispatcher("/PassBook.jsp");
+		requestDispatcher.forward(request, response);
+		
+	}
+
 	private void editProfileClick(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+		
 		RequestDispatcher requestDispatcher = request.getRequestDispatcher("/EditProfile.jsp");
 		requestDispatcher.forward(request, response);
 
@@ -110,13 +154,20 @@ public class CustomerController extends HttpServlet {
 		}
 		String username = (String) (session.getAttribute("username"));
 		int customerId = Integer.parseInt(username);
-		String firstName = request.getParameter("first_name");
-		String lastName = request.getParameter("last_name");
-		String email = request.getParameter("email");
+		String firstName = request.getParameter("firstName");
+		String lastName = request.getParameter("lastName");
 		String password = request.getParameter("password");
-		String customerAddress = request.getParameter("customer_address");
+		String customerAddress = request.getParameter("address");
 
-		boolean checkEdit = commonDeo.updateProfile(customerId, firstName, lastName, password, email, customerAddress);
+		boolean checkEdit = commonDeo.updateProfile(customerId, firstName, lastName, customerAddress);
+		System.out.println("update profile part:"+checkEdit);
+		if(checkEdit==false) {
+//			.create exception of profile not updated
+			return;
+		}
+		
+		boolean updatePassword=commonDeo.updatePassword(customerId,password);
+		System.out.println("update password part:"+updatePassword);
 		request.setAttribute("updateprofilesuccess", checkEdit);
 		RequestDispatcher requestDispatcher = request.getRequestDispatcher("/CustomerHome.jsp");
 		requestDispatcher.forward(request, response);
@@ -131,17 +182,39 @@ public class CustomerController extends HttpServlet {
 		}
 		String username = (String) (session.getAttribute("username"));
 		int customerId = Integer.parseInt(username);
-		int currentBalance = customerDeo.getCurrentBalance(customerId);
+		int ReceiverAccountNumber = Integer.parseInt(request.getParameter("ReceiverAccountNumber"));
+		boolean checkReceiverDetails = adminDeo.findAccountNumber(ReceiverAccountNumber);
 		int transferAmount = Integer.parseInt(request.getParameter("transferAmount"));
+		String transferingAmount = request.getParameter("transactionType");
+		TransactionType transactionType=TransactionType.valueOf(transferingAmount);
 		System.out.println("transferamountis: " + transferAmount);
+
+		if (checkReceiverDetails == false) {
+//			create exception of accountnubmer not found;
+			return;
+		}
+
+		int currentBalance = customerDeo.getCurrentBalance(customerId);
 		if (currentBalance < transferAmount) {
 			System.out.println("your balance is less than transfer amount");
 //		 create exception of less amount present
 			return;
 		}
+
 		int balanceAfterTransaction = currentBalance - transferAmount;
-		boolean checkTransaction = customerDeo.performTransaction(customerId, balanceAfterTransaction);
-		request.setAttribute("checkTransaction", checkTransaction);
+		boolean checkMoneyReduced = customerDeo.reduceSenderBalance(customerId, balanceAfterTransaction);
+		if (checkMoneyReduced == false) {
+//			create exception of transaction failed;
+			return;
+		}
+		int currentUserAccNo = customerDeo.getCustomerAccountNo(customerId);
+		boolean addTrasaction = customerDeo.addTransactionRecord(customerId, transferAmount, ReceiverAccountNumber,
+				currentUserAccNo, transactionType);
+		if (addTrasaction == false) {
+//			create exception of transacion not added to db
+			return;
+		}
+		request.setAttribute("checkTransaction", addTrasaction);
 		RequestDispatcher requestDispatcher = request.getRequestDispatcher("/transactionSuccess.jsp");
 		requestDispatcher.forward(request, response);
 	}

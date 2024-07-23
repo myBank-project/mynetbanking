@@ -16,8 +16,17 @@
         <h2>Passbook</h2>
          <!-- Sort option for date -->
         <div class="text-end mb-3">
-            <a href="TransactionSortServlet?sortBy=date" class="btn btn-secondary">Sort by Date</a>
+            <a href="/mybanknetbanking/Customer?command=SortByOldestOneInPassBook" class="btn btn-secondary">Oldest One's</a>
         </div>
+        <div class="text-end mb-3">
+        <form action="Customer" method="get" class="btn btn-secondary">
+		 <input name="command" value="searchByAccNo" type="hidden" />
+			<div class="form-group">
+			<input type="number" class="form-control" id="searchByAccNo" name="searchByAccNo"
+					value="search account">
+			</div>
+		</form>
+		</div>
         <table class="table table-bordered">
             <thead>
                 <tr>

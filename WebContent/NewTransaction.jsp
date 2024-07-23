@@ -24,10 +24,11 @@
 			<input name="command" value="newTransaction" type="hidden" />
 			<div class="form-group">
 				<label for="type">Type of Transaction:</label> <select
-					class="form-control" id="type" name="type">
-					<option value="Credit">Credit</option>
-					<option value="Debit">Debit</option>
-					<option value="Transfer">Transfer</option>
+					class="form-control" id="transactionType" name="transactionType">
+					<option value="DEPOSIT" name="transactionType">Deposit</option>
+					<option value="WITHDRAWAL" name="transactionType">WithDrawl</option>
+					<option value="TRANSFER" name="transactionType">Transfer</option>
+					<option value="PAYMENT" name="transactionType">Payment</option>
 				</select>
 			</div>
 			<div class="form-group">
@@ -36,8 +37,8 @@
 			</div>
 			<div class="form-group">
 				<label for="toAccount">To Account Number (in case of
-					transfer):</label> <input type="text" class="form-control" id="toAccount"
-					name="toAccount">
+					transfer):</label> <input type="number" class="form-control" id="ReceiverAccountNumber"
+					name="ReceiverAccountNumber">
 			</div>
 			<button type="submit" class="btn btn-primary">Submit</button>
 			<button type="reset" class="btn btn-secondary">Cancel</button>

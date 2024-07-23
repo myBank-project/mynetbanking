@@ -34,9 +34,30 @@
 	<div class="container">
         <h2>View Transactions</h2>
          <!-- Sort option for date -->
-        <div class="text-end mb-3">
-            <a href="TransactionSortServlet?sortBy=date" class="btn btn-secondary">Sort by Date</a>
-        </div>
+        
+        <div class="row">
+			<form action="CommonController" method="get" class="mb-3 text-center">
+
+
+				<div class="col-md-6">
+					<input name="command" value="searchTransactionBySenderAccountNo" type="hidden" /> <input
+						type="number" id="firstName" name="searchTransactionBySenderAccountNo"
+						class="form-control" placeholder="sender account number">
+				</div>
+			</form>
+			
+			<form action="CommonController" method="get" class="mb-3 text-center">
+
+
+				<div class="col-md-6">
+					<input name="command" value="searchTransactionByReceiverAccountNo" type="hidden" /> <input
+						type="number" id="firstName" name="searchTransactionByReceiverAccountNo"
+						class="form-control" placeholder="receiver account number">
+				</div>
+			</form>
+		</div>
+        
+        
         <table class="table table-striped">
             <thead>
                 <tr>

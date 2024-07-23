@@ -18,6 +18,8 @@ import javax.sql.DataSource;
 
 import com.myBank.deo.CommonDeo;
 import com.myBank.entity.CustomerPassbookOrViewTransaction;
+import com.myBank.entity.Transaction;
+import com.myBank.entity.ViewCustomer;
 import com.myBank.deo.CustomerDeo;
 
 @WebServlet("/CommonController")
@@ -41,6 +43,7 @@ public class CommonController extends HttpServlet {
 
 		String command = request.getParameter("command");
 		switch (command) {
+//		admin view transaction search options
 		case "searchTransactionByDate":
 			try {
 				searchTransactionByDate(request, response);
@@ -73,36 +76,77 @@ public class CommonController extends HttpServlet {
 				e.printStackTrace();
 			}
 			break;
+		
+//			admin passbook search options
+			
+		case "searchByAccountNumber":
+			try {
+				searchByAccountNumber(request,response);
+			} catch (SQLException | ServletException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
+			
+		case "searchByFirstName":
+			try {
+				searchByFirstName(request,response);
+			} catch (SQLException | ServletException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
 		}
 
 	}
 
+	private void searchByFirstName(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
+		System.out.println("searchByFirstName: "+request.getParameter("searchByFirstName"));
+		String firstName = request.getParameter("searchByFirstName");
+		List<ViewCustomer> searchByFirstName = commonDeo
+				.searchByFirstName(firstName);
+		request.setAttribute("cutomersDetails", searchByFirstName);
+		RequestDispatcher requestDispatcher = request.getRequestDispatcher("/ViewCustomers.jsp");
+		requestDispatcher.forward(request, response);
+		
+	}
+
+	private void searchByAccountNumber(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
+		System.out.println("searchByAccountNumber: "+request.getParameter("searchByAccountNumber"));
+		int AccountNo = Integer.parseInt(request.getParameter("searchByAccountNumber"));
+		List<ViewCustomer> searchByAccountNumber = commonDeo
+				.searchCustomerByAccountNumber(AccountNo);
+		request.setAttribute("cutomersDetails", searchByAccountNumber);
+		RequestDispatcher requestDispatcher = request.getRequestDispatcher("/ViewCustomers.jsp");
+		requestDispatcher.forward(request, response);
+		
+	}
+
 	private void searchTransactionByReceiverAccountNo(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException, SQLException {
-		int receiverAccountNo = Integer.parseInt(request.getParameter("receiver_account_no"));
-		List<CustomerPassbookOrViewTransaction> transactionByReceiverAccountNo = commonDeo
+		int receiverAccountNo = Integer.parseInt(request.getParameter("searchTransactionByReceiverAccountNo"));
+		List<Transaction> transactionByReceiverAccountNo = commonDeo
 				.getTransactionByReceiverAccountNo(receiverAccountNo);
-		request.setAttribute("viewTransaction", transactionByReceiverAccountNo);
-		RequestDispatcher requestDispatcher = request.getRequestDispatcher("/view-transaction.jsp");
+		request.setAttribute("viewAllTransactions", transactionByReceiverAccountNo);
+		RequestDispatcher requestDispatcher = request.getRequestDispatcher("/ViewTransactions.jsp");
 		requestDispatcher.forward(request, response);
 
 	}
 
 	private void searchTransactionBySenderAccountNo(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException, SQLException {
-		int senderAccountNo = Integer.parseInt(request.getParameter("sender_account_no"));
-		List<CustomerPassbookOrViewTransaction> transactionBySenderAccountNo = commonDeo
+		int senderAccountNo = Integer.parseInt(request.getParameter("searchTransactionBySenderAccountNo"));
+		List<Transaction> transactionBySenderAccountNo = commonDeo
 				.getTransactionBySenderAccountNo(senderAccountNo);
-		request.setAttribute("viewTransaction", transactionBySenderAccountNo);
-		RequestDispatcher requestDispatcher = request.getRequestDispatcher("/view-transaction.jsp");
+		request.setAttribute("viewAllTransactions", transactionBySenderAccountNo);
+		RequestDispatcher requestDispatcher = request.getRequestDispatcher("/ViewTransactions.jsp");
 		requestDispatcher.forward(request, response);
-
 	}
 
 	private void searchTransactionByType(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException, SQLException {
 		String transactionType=request.getParameter("transaction-type");
-		List<CustomerPassbookOrViewTransaction> transactionByType = commonDeo.getTransactionByType(transactionType);
+		List<Transaction> transactionByType = commonDeo.getTransactionByType(transactionType);
 		request.setAttribute("viewTransaction", transactionByType);
 		RequestDispatcher requestDispatcher = request.getRequestDispatcher("/view-transaction.jsp");
 		requestDispatcher.forward(request, response);

@@ -56,9 +56,6 @@ body {
 					href="Admin?command=addNewCustomerClick"
 					class="btn btn-custom btn-block">Add New Customer</a></li>
 				<li class="list-group-item"><a
-					href="Admin?command=addBankAccount"
-					class="btn btn-custom btn-block">Add Bank Account</a></li>
-				<li class="list-group-item"><a
 					href="Admin?command=viewCustomers" class="btn btn-custom btn-block">View
 						Customers</a></li>
 				<li class="list-group-item"><a

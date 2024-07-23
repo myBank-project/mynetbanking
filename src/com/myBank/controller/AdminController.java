@@ -143,12 +143,12 @@ public class AdminController extends HttpServlet {
 		}
 //		ṣet account number with customer table
 		boolean isAddedToCustomer = adminDeo.setAccountWithCustomer(customerId, createdAccountNumber);
-		
+
 //		create default username(customerId) and password
-		Role role=Role.CUSTOMER;
-		
-		boolean isCredentialsCreated=adminDeo.createCredentials(customerId,role);
-		
+		Role role = Role.CUSTOMER;
+
+		boolean isCredentialsCreated = adminDeo.createCredentials(customerId, role);
+
 		request.setAttribute("createdAccountNumber", createdAccountNumber);
 		RequestDispatcher requestDispatcher = request.getRequestDispatcher("/AdminHome.jsp");
 		requestDispatcher.forward(request, response);

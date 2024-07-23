@@ -8,6 +8,8 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
+import com.myBank.other.TransactionType;
+
 public class CustomerDeo {
 
 	private DataSource dataSource;
@@ -32,15 +34,44 @@ public class CustomerDeo {
 		return currentBalance;
 	}
 
-	public boolean performTransaction(int customerId, int balanceAfterTransaction) throws SQLException {
+	public boolean reduceSenderBalance(int customerId, int balanceAfterTransaction) throws SQLException {
 		boolean transaction = false;
 		Connection conn = dataSource.getConnection();
 		String sql = "UPDATE customer set balance=? where customer_id=?";
 		PreparedStatement prepStmt = conn.prepareStatement(sql);
-		prepStmt.setInt(1,balanceAfterTransaction);
+		prepStmt.setInt(1, balanceAfterTransaction);
 		prepStmt.setInt(2, customerId);
-		int rs=prepStmt.executeUpdate();
-		return rs==1?true:false;
+		int rs = prepStmt.executeUpdate();
+		return rs == 1 ? true : false;
+	}
+
+	public int getCustomerAccountNo(int customerId) throws SQLException {
+		Connection conn = dataSource.getConnection();
+		String sql = "select account_number from customer where customer_id=?";
+		PreparedStatement prpStmt = conn.prepareStatement(sql);
+		prpStmt.setString(1, Integer.toString(customerId));
+		ResultSet rs = prpStmt.executeQuery();
+		int accountNumber = 0;
+		while (rs.next()) {
+			accountNumber = rs.getInt(1);
+		}
+		return accountNumber;
+	}
+
+	public boolean addTransactionRecord(int customerId, int transferAmount, int receiverAccountNumber,
+			int currentUserAccNo, TransactionType transactionType) throws SQLException {
+		Connection conn = dataSource.getConnection();
+		String sql = "insert into transactions(sender_account_no,receiver_account_no,transaction_type,transaction_amount,customer_id) values(?,?,?,?,?)";
+		PreparedStatement prpStmt = conn.prepareStatement(sql);
+		prpStmt.setInt(1, currentUserAccNo);
+		prpStmt.setInt(2, receiverAccountNumber);
+		prpStmt.setString(3, transactionType.name());
+		prpStmt.setInt(4, transferAmount);
+		prpStmt.setInt(5, customerId);
+
+		int rs = prpStmt.executeUpdate();
+
+		return rs == 1 ? true : false;
 	}
 
 }
